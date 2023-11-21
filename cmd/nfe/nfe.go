@@ -2,12 +2,10 @@ package nfe
 
 import (
 	"encoding/xml"
-	"fmt"
 	"io"
 	"os"
 	"path/filepath"
 	"strconv"
-	"strings"
 )
 
 type NFe struct {
@@ -56,21 +54,21 @@ func SomaValoresNotas(diretorio string) (float64, error) {
 				return err
 			}
 
-			for _, item := range nfe.NFe.InfNFe.Det {
-				if strings.Contains(strings.ToLower(item.Prod.XProd), "trelicada") {
-					fmt.Println("Produto com trelicada encontrado: " + item.Prod.XProd)
-
-					nomeArquivoCopia := "xml_encontrada_" + filepath.Base(path)
-					caminhoCopia := filepath.Join(diretorio, nomeArquivoCopia)
-					err := copiarArquivo(path, caminhoCopia)
-					if err != nil {
-						fmt.Println("Erro ao copiar arquivo:", err)
-					} else {
-						fmt.Println("Arquivo copiado com sucesso:", nomeArquivoCopia)
-					}
-					break
-				}
-			}
+			//for _, item := range nfe.NFe.InfNFe.Det {
+			//	if strings.Contains(strings.ToLower(item.Prod.XProd), "trelicada") {
+			//		fmt.Println("Produto com trelicada encontrado: " + item.Prod.XProd)
+			//
+			//		nomeArquivoCopia := "xml_encontrada_" + filepath.Base(path)
+			//		caminhoCopia := filepath.Join(diretorio, nomeArquivoCopia)
+			//		err := copiarArquivo(path, caminhoCopia)
+			//		if err != nil {
+			//			fmt.Println("Erro ao copiar arquivo:", err)
+			//		} else {
+			//			fmt.Println("Arquivo copiado com sucesso:", nomeArquivoCopia)
+			//		}
+			//		break
+			//	}
+			//}
 
 			valor, err := strconv.ParseFloat(nfe.NFe.InfNFe.Total.ICMSTot.VNF, 64)
 			if err != nil {
