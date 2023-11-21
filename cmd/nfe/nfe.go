@@ -2,12 +2,14 @@ package nfe
 
 import (
 	"encoding/xml"
+	"fmt"
+	"io"
 	"os"
 	"path/filepath"
 	"strconv"
+	"strings"
 )
 
-// NFe representa a estrutura da Nota Fiscal Eletrônica
 type NFe struct {
 	XMLName xml.Name `xml:"nfeProc"`
 	NFe     struct {
@@ -17,6 +19,20 @@ type NFe struct {
 					VNF string `xml:"vNF"`
 				} `xml:"ICMSTot"`
 			} `xml:"total"`
+
+			Dest struct {
+				CNPJ string `xml:"CNPJ"`
+				CPF  string `xml:"CPF"`
+			} `xml:"dest"`
+
+			Det []struct {
+				Prod struct {
+					CProd  string `xml:"cProd"`
+					XProd  string `xml:"xProd"`
+					QCom   string `xml:"qCom"`
+					VUnCom string `xml:"vUnCom"`
+				} `xml:"prod"`
+			} `xml:"det"`
 		} `xml:"infNFe"`
 	} `xml:"NFe"`
 }
@@ -40,6 +56,22 @@ func SomaValoresNotas(diretorio string) (float64, error) {
 				return err
 			}
 
+			for _, item := range nfe.NFe.InfNFe.Det {
+				if strings.Contains(strings.ToLower(item.Prod.XProd), "trelicada") {
+					fmt.Println("Produto com trelicada encontrado: " + item.Prod.XProd)
+
+					nomeArquivoCopia := "xml_encontrada_" + filepath.Base(path)
+					caminhoCopia := filepath.Join(diretorio, nomeArquivoCopia)
+					err := copiarArquivo(path, caminhoCopia)
+					if err != nil {
+						fmt.Println("Erro ao copiar arquivo:", err)
+					} else {
+						fmt.Println("Arquivo copiado com sucesso:", nomeArquivoCopia)
+					}
+					break
+				}
+			}
+
 			valor, err := strconv.ParseFloat(nfe.NFe.InfNFe.Total.ICMSTot.VNF, 64)
 			if err != nil {
 				return err
@@ -55,4 +87,21 @@ func SomaValoresNotas(diretorio string) (float64, error) {
 	}
 
 	return somaTotal, nil
+}
+
+func copiarArquivo(src, dst string) error {
+	entrada, err := os.Open(src)
+	if err != nil {
+		return err
+	}
+	defer entrada.Close()
+
+	saida, err := os.Create(dst)
+	if err != nil {
+		return err
+	}
+	defer saida.Close()
+
+	_, err = io.Copy(saida, entrada)
+	return err
 }
